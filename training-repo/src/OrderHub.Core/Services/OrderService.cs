@@ -35,22 +35,14 @@ public class OrderService : IOrderService
     public async Task<ServiceResult<Order>> CreateOrderAsync(int customerId, IReadOnlyList<NewOrderLine> lines)
     {
         var customer = await _customerRepository.GetByIdAsync(customerId);
-        if (customer is null)
-            return ServiceResult<Order>.Fail("找不到指定的客戶");
-
-        if (lines is null || lines.Count == 0)
-            return ServiceResult<Order>.Fail("訂單至少需要一項商品");
-
-        if (lines.Any(l => l.Quantity <= 0))
-            return ServiceResult<Order>.Fail("商品數量必須大於 0");
-
-        if (lines.Select(l => l.ProductId).Distinct().Count() != lines.Count)
-            return ServiceResult<Order>.Fail("同一商品請勿重複加入，請調整數量即可");
+        var validationError = ValidateCreateOrderRequest(customer, lines);
+        if (validationError is not null)
+            return ServiceResult<Order>.Fail(validationError);
 
         var errors = new List<string>();
         var order = new Order
         {
-            CustomerId = customer.Id,
+            CustomerId = customer!.Id,
             Status = OrderStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
@@ -87,6 +79,23 @@ public class OrderService : IOrderService
         await _orderRepository.SaveChangesAsync();
 
         return ServiceResult<Order>.Ok(order);
+    }
+
+    private static string? ValidateCreateOrderRequest(Customer? customer, IReadOnlyList<NewOrderLine> lines)
+    {
+        if (customer is null)
+            return "找不到指定的客戶";
+
+        if (lines is null || lines.Count == 0)
+            return "訂單至少需要一項商品";
+
+        if (lines.Any(l => l.Quantity <= 0))
+            return "商品數量必須大於 0";
+
+        if (lines.Select(l => l.ProductId).Distinct().Count() != lines.Count)
+            return "同一商品請勿重複加入，請調整數量即可";
+
+        return null;
     }
 
     public async Task<ServiceResult<Order>> CancelOrderAsync(int id)
