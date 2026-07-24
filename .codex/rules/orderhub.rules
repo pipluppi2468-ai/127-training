@@ -1,0 +1,38 @@
+# Dangerous operations: block directly.
+prefix_rule(
+    pattern = ["rm", "-rf"],
+    decision = "forbidden",
+    justification = "Block recursive force delete",
+)
+prefix_rule(
+    pattern = ["git", "push", "--force"],
+    decision = "forbidden",
+    justification = "Block force push",
+)
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "Block hard reset",
+)
+
+# Sensitive operations: require confirmation.
+prefix_rule(
+    pattern = ["dotnet", "ef", "database", "drop"],
+    decision = "prompt",
+    justification = "Dropping the database requires confirmation",
+)
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "prompt",
+    justification = "Pushing changes requires confirmation",
+)
+
+# Routine operations: allow.
+prefix_rule(pattern = ["dotnet", "build"], decision = "allow", justification = "Allow routine build")
+prefix_rule(pattern = ["dotnet", "test"], decision = "allow", justification = "Allow routine test")
+prefix_rule(pattern = ["dotnet", "run"], decision = "allow", justification = "Allow local run")
+prefix_rule(pattern = ["git", "status"], decision = "allow", justification = "Allow status")
+prefix_rule(pattern = ["git", "diff"], decision = "allow", justification = "Allow diff")
+prefix_rule(pattern = ["git", "log"], decision = "allow", justification = "Allow log")
+prefix_rule(pattern = ["git", "add"], decision = "allow", justification = "Allow staging")
+prefix_rule(pattern = ["git", "commit"], decision = "allow", justification = "Allow commit")
