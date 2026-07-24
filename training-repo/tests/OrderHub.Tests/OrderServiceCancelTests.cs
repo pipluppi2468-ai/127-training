@@ -35,6 +35,23 @@ public class OrderServiceCancelTests
     }
 
     [Theory]
+    [InlineData(OrderStatus.Pending)]
+    [InlineData(OrderStatus.Confirmed)]
+    public async Task CancelOrder_ActiveOrder_RestoresProductStock(OrderStatus initialStatus)
+    {
+        using var db = TestSetup.CreateContext();
+        var service = TestSetup.CreateOrderService(db);
+        var order = await CreateOrderWithStatusAsync(service, db, initialStatus);
+        var productId = order.Items.Single().ProductId;
+        var stockBeforeCancel = db.Products.Single(p => p.Id == productId).StockQuantity;
+
+        var result = await service.CancelOrderAsync(order.Id);
+
+        Assert.True(result.Success);
+        Assert.Equal(stockBeforeCancel + 1, db.Products.Single(p => p.Id == productId).StockQuantity);
+    }
+
+    [Theory]
     [InlineData(OrderStatus.Shipped)]
     [InlineData(OrderStatus.Cancelled)]
     public async Task CancelOrder_NotCancellableStatus_Fails(OrderStatus initialStatus)
