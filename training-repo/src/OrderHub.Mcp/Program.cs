@@ -10,7 +10,7 @@ using OrderHub.Infrastructure.Repositories;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddDbContext<OrderHubDbContext>(options =>
-    options.UseSqlServer("Server=localhost/MSSQLSERVER16;Database=OrderHubTraining;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True"));
+    options.UseSqlServer("Server=localhost\\MSSQLSERVER16;Database=OrderHubTraining;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True"));
 
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
